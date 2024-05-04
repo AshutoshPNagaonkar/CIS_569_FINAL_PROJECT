@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CIS_568_Final_Project</title>
+    <!-- Include the latest version of D3.js -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- Chart02 Include d3-geo and d3-scale-chromatic for map and color scales --> 
+    <script src="https://d3js.org/d3-geo.v1.min.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script> <!-- ECharts -->
+    <style> 
+    html {
+  font-family:cursive;
+}
+    /* <!-- Chart 1 --> */
+        /* Styling for the SVG_chart1 and chart elements */
+        .axis {
+            font-size: 12px;
+        }
+        .line {
+            fill: none;
+            stroke-width: 2px;
+        }
+        /* Style for the tooltip_chart1 */
+        .tooltip_chart1 {
+            position: absolute;
+            text-align: center;
+            padding: 5px;
+            background: black;
+            color: white;
+            border: 1px solid #333;
+            border-radius: 4px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        /* Responsive styling for the SVG_chart1 */
+        .responsive-svg {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+        /* Grid line styling */
+        .grid line {
+            stroke: lightgray;
+            stroke-opacity: 0.7;
+            shape-rendering: crispEdges;
+        }
+        .grid path_chart1 {
+            display: none;
+        }
+        /* <!-- Chart 1 --> */
+        /* <!-- Chrolopleth Map --> */
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .filter {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Style for the tooltip_chart2 */
+        .tooltip_chart2 {
+            position: absolute;
+            padding: 5px;
+            background: black;
+            color: white;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        /* Style for the map SVG */
+        #map {
+            background-color: rgb(255, 255, 255); /* Set the background color */
+            width: 100%; /* Responsive to device width */
+            height: auto; /* Maintain aspect ratio */
+        }
+
+        /* Style for the legend */
+        .legend {
+            font-size: 12px;
+            font-family: cursive;
+            fill: #000; /* Text color */
+        }
+        /* <!-- Chrolopleth Map --> */
+/* <!-- Chart 3 --> */
+.center {
+            text-align: center;
+        }
+
+        #treemap {
+            width: 100%;
+            height: 500px; /* Adjust height as needed */
+            border: 2px solid #333;
+            /* background-color: black; */
+        }
+
+        #line-chart_treeMap {
+            width: 100%;
+            height: 400px; /* Adjust height as needed */
+        }
+        /* <!-- Chart 3 --> */
+
+        /* chart 4 bar charts starts*/
+
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            padding: 5px;
+            background: black;
+            color: white;
+            border: 1px solid black;
+            border-radius: 5px;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        /* chart 4 bar charts end */
+    </style>
+</head>
+<body>
+
+<h1 class="center">USA BORDER CROSSING ENTRY DATA ANALYSIS</h1>
+<h4 class="center">THE DATA IS ANALYSED BETWEEN THE YEARS 2010 TO 2023</h4>
+
+<!-- Chart 1 -->
+<!-- Responsive SVG_chart1 container for the line chart -->
+<div style="width: 100%; max-width: 1250px; margin: auto;">     
+    <svg id="line-chart" class="responsive-svg" viewBox="0 0 1000 300" preserveAspectRatio="xMidYMid meet">
+    </svg>
+</div>
+<hr>
+<!-- Tooltip_chart1 for displaying information on hover -->
+<div id="tooltip_chart1" class="tooltip_chart1"></div>
+<!-- Chart 1 -->
+
+<!-- Chrolopleth Map -->
+<!-- Title section -->
+<!-- <div class="header"> -->
+    <!-- <h1>US Border Crossing Heatmap</h1> Page title -->
+<!-- </div> -->
+
+<!-- Dropdown filter section -->
+<div class="filter" >
+    <label for="year-select">Select Year:</label>
+    <select id="year-select" ></select> <!-- Dropdown for filtering by year -->
+</div>
+
+<!-- SVG for the choropleth map -->
+<svg id="map" viewBox="0 0 960 600"></svg> <!-- Responsive SVG map -->
+
+<hr>
+
+<div id="tooltip_chart2" class="tooltip_chart2"></div> <!-- Tooltip div for hover effects -->
+
+<!-- Chrolopleth Map -->
+<!-- Chart 3 -->
+<!-- <h1 class="center">Treemap and Line Chart with ECharts</h1> -->
+    <!-- Dropdown for selecting a year -->
+    <div class="center" >
+        <label for="year-select-treeMap">Select Year:</label>
+        <select id="year-select-treeMap"></select>
+    </div>
+
+    <!-- Treemap Container -->
+    <div id="treemap"></div>
+    <hr>
+    <div class="center" style="color: rgb(180, 12, 12)"><h5>CLICK ON THE STATE (e.g., MICHIGAN) OR THE PORT NAME (e.g., CALEXICO) ON MAP TO GENERATE MONTH WISE DATA.</h5></div>
+    
+    <!-- Line Chart Container -->
+    <div id="line-chart_treeMap"></div>
+    <hr>
+<!-- Chart 3 -->
+
+<!-- Chart 4 bar chart start -->
+<div class="center">
+<h4>THIS BAR CHARTS WILL SHOW DATA STATE WISE AND MEASURE WISE.</h4>
+</div>
+<!-- Dropdown filter for Year -->
+<div class="center">
+<label class="center"for="year-filter">SELECT YEAR TO FILTER THE BAR CHARTS: </label>
+<select id="year-filter">
+    <!-- Placeholder for dynamic year options -->
+</select>
+</div>
+<div class="center">
+<h3>   </h3>
+</div>
+<div class="center">
+<!-- Dropdown filter for State -->
+<label for="state-filter">SELECT STATE: </label>
+<select id="state-filter">
+    <!-- <option value="all">All</option> Default option for all states -->
+</select>
+</div>
+<div class="center">
+<!-- Container for the bar chart -->
+<div class="center">
+    <div class="bar-chart-title" id="bar-chart-title" style="text-align:center"></div>
+    <div id="bar-chart" style="text-align:center"></div>
+</div>
+<div class="center">
+<h4>   </h4>
+</div>
+<hr>
+<div class="center">
+<!-- Dropdown filter for Measure -->
+<label for="measure-filter">SELECT MEASURE: </label>
+<select id="measure-filter"></select>
+</div>
+<!-- Container for the bar chart 02-->
+<div>
+    <div class="bar-chart-title-02" id="bar-chart-title-02" style="text-align:center"></div>
+    <div id="bar-chart-02" style="text-align:center"></div>
+</div>  
+<hr>
+
+<!-- Chart 4 bar chart end -->
+<script>
+    // <!-- Chart 1 -->
+    const csvFileName = 'Border_Crossing_Entry_Data_OG - Copy.csv';
+ // chart 3 start
+ let uniqueStates_treeMap = [];
+
+// Read the CSV data
+d3.csv(csvFileName).then(data => {
+    // Create a Set to store unique state names
+    const stateSet = new Set();
+
+    // Iterate over the CSV data to add state names to the Set
+    data.forEach(row => {
+        const stateName = row.State; // Extract the "State" field
+        if (stateName) {
+            stateSet.add(stateName); // Add to the Set (automatically unique)
+        }
+    });
+
+    // Convert the Set to an array of unique state names
+    uniqueStates_treeMap = Array.from(stateSet);
+
+    // Output the list of unique states for verification
+    console.log("Unique States:", uniqueStates_treeMap); });
+
+    // -------------------------------------------
+    // Read the CSV data
+    let uniquePortName = [];
+d3.csv(csvFileName).then(data => {
+    // Create a Set to store unique state names
+    const portNameSet = new Set();
+
+    // Iterate over the CSV data to add state names to the Set
+    data.forEach(row => {
+        const portName = row.PortName; // Extract the "State" field
+        if (portName) {
+            portNameSet.add(portName); // Add to the Set (automatically unique)
+        }
+    });
+
+    // Convert the Set to an array of unique state names
+    uniquePortName = Array.from(portNameSet);
+
+    // Output the list of unique states for verification
+    console.log("Unique PortANme:", uniquePortName); });
+// -----------------------------------------------
+
+        
+        const yearSelect = d3.select('#year-select-treeMap');
+
+        // Initialize ECharts instances
+        const treemapChart = echarts.init(document.getElementById('treemap'));
+        const lineChart = echarts.init(document.getElementById('line-chart_treeMap'));
+
+        d3.csv(csvFileName).then(data => {
+            let csvData;
+            csvData = data;
+
+            // Get unique years and populate the dropdown
+            const uniqueYears = [...new Set(data.map(row => row.Year))];
+            uniqueYears.sort((a, b) => a - b).forEach(year => {
+                yearSelect.append('option')
+                          .attr('value', year)
+                          .text(year);
+            });
+
+            // Function to update the treemap based on a specified year
+            const updateTreemap = (year) => {
+                const states = {};
+
+                
+
+                // Create the treemap structure for the specified year
+                data.filter(row => row.Year === year).forEach(row => {
+                    const stateName = row.State;
+                    const portName = row.PortName;
+                    const measure = row.Measure;
+                    const value = parseFloat(row.Value);
+
+                    if (!states[stateName]) {
+                        states[stateName] = {};
+                    }
+
+                    if (!states[stateName][portName]) {
+                        states[stateName][portName] = {};
+                    }
+
+                    states[stateName][portName][measure] = (states[stateName][portName][measure] || 0) + value;
+                });
+
+                const treemapData = Object.keys(states).map(stateName => {
+                    const stateData = {
+                        name: stateName,
+                        children: []
+                    };
+
+                    Object.keys(states[stateName]).forEach(portName => {
+                        const portData = {
+                            name: portName,
+                            children: []
+                        };
+
+                        Object.keys(states[stateName][portName]).forEach(measure => {
+                            portData.children.push({
+                                name: measure,
+                                value: states[stateName][portName][measure]
+                            });
+                        });
+                        
+
+                        stateData.children.push(portData);
+                    });
+
+                    return stateData;
+                });
+
+                function formatWithCommas(value) {
+    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+                const treemapOption = {
+                    title: {
+                        text: `THIS TREEMAP IS SHOWING DATA FOR THE YEAR ${year}.`,
+                        left: 'center' // Centered title
+                    },
+                    tooltip: {
+        trigger: 'item',
+        backgroundColor: 'black',
+        textStyle: {
+            color: 'white', // Set the text color to white
+        },
+        formatter: (params) => {
+            const formattedValue = formatWithCommas(params.value);
+            return `${params.name}<br>Value: ${formattedValue}`;
+        }
+    },
+                    series: [{
+                        type: 'treemap',
+                        visibleMin: 300,
+                        data: treemapData,
+                        label: {
+                            show: true,
+                            formatter: '{b}'
+                        },
+                        upperLabel: {
+                            show: true,
+                            height: 20,
+                            //backgroundColor: 'charcoal'
+                        },
+                        itemStyle: {
+                    borderColor: '#fff'
+                        },
+                        levels: [
+                             { // level 1
+                        itemStyle: {
+                            borderColor: '#21749D',
+                            //color: 'red',
+                            borderWidth: 20,
+                            gapWidth: 3
+                        },
+                        upperLabel: {
+                            show: true
+                        }
+                    },{// level 2
+                        itemStyle: {
+                            borderColor: 'lightblue',
+                            //Color: '#52AB80',
+                            borderWidth: 5,
+                            gapWidth: 2
+                        },
+                        upperLabel: {
+                            show: true
+                        }
+                    },
+                    {// level 3
+                        itemStyle: {
+                            borderColor: 'white',
+                            //borderWidth: 5,
+                            gapWidth:1
+                        },
+                        upperLabel: {
+                            show: true
+                        }
+                    }
+                        ]
+
+                    }]
+                };
+
+                treemapChart.setOption(treemapOption);
+            };
+
+            // Function to update the line chart when a state is clicked
+            const updateLineChart_State = (stateName) => {
+                lineChart.clear();
+                const filteredData = csvData.filter(row => row.State === stateName);
+
+                // Group data by PortName and Month
+                const lineChartData_state = {};
+
+                filteredData.forEach(row => {
+                    const portName = row.PortName;
+                    const month = parseInt(row.Month, 10) - 1; // Adjust month for zero-based index
+                    const value = parseFloat(row.Value);
+
+                    if (!lineChartData_state[portName]) {
+                        lineChartData_state[portName] = Array(12).fill(0); // 12 months
+                    }
+
+                    lineChartData_state[portName][month] += value;
+                });
+
+                const seriesData = Object.keys(lineChartData_state).map(portName => ({
+                    name: portName,
+                    type: 'line',
+                    smooth: true,
+                    showSymbol: true, // Hide individual points
+                    triggerLineEvent: true,
+                    data: lineChartData_state[portName]
+
+                }));
+
+                let capitalizedStateName = stateName.toUpperCase();
+
+                const lineChartOption_state = {
+                    series: seriesData,
+                    title: {
+                        text: `THIS LINE CHART IS SHOWING MONTHWISE DATA OF FOR ${capitalizedStateName} STATE.`,
+                        left: 'center' // Centered title
+                    },
+                    legend: {
+                        orient: 'horizontal',
+                        bottom: '5%',
+                        data: Object.keys(lineChartData_state), // Port names for the legend,
+                        show: true,
+                        
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'line'
+                        }, 
+                               backgroundColor: 'black',
+        textStyle: {
+            color: 'white', // Set the text color to white
+        },
+                    },
+                    
+                    xAxis: {
+                        type: 'category',
+                        name: 'Month',
+                        data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+                    },
+                    yAxis: {
+                        type: 'value',
+                        name: 'Value'
+                    },
+                    
+                };
+
+                // Update the line chart with new data and option
+                lineChart.setOption(lineChartOption_state);
+                console.log(lineChart.getOption());
+            };
+
+            const updateLineChart_PortName = (portName) => {
+                lineChart.clear();
+                const filteredData = csvData.filter(row => row.PortName === portName);
+
+                // Group data by PortName and Month
+                const lineChartData = {};
+
+                filteredData.forEach(row => {
+                    const measureName = row.Measure;
+                    const month = parseInt(row.Month, 10) - 1; // Adjust month for zero-based index
+                    const value = parseFloat(row.Value);
+
+                    if (!lineChartData[measureName]) {
+                        lineChartData[measureName] = Array(12).fill(0); // 12 months
+                    }
+
+                    lineChartData[measureName][month] += value;
+                });
+
+                const seriesData = Object.keys(lineChartData).map(measureName => ({
+                    name: measureName,
+                    type: 'line',
+                    smooth: true,
+                    showSymbol: true, // Hide individual points
+                    data: lineChartData[measureName]
+                }));
+
+                let capitalizedPortName = portName.toUpperCase();
+
+                const lineChartOption = {
+                    title: {
+                        text: `THIS LINE CHART IS SHOWING MONTHWISE DATA FOR ${capitalizedPortName} PORT.`,
+                        left: 'center' // Centered title
+                    },
+                    legend: {
+                        orient: 'horizontal',
+                        data: Object.keys(lineChartData), // measure names for the legend
+                        show: true,
+                        bottom: '5%',
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'line'
+                            },
+                        backgroundColor: 'black',
+                        textStyle: {
+                        color: 'white', // Set the text color to white
+                        }
+                    },
+                    xAxis: {
+                        type: 'category',
+                        name: 'Month',
+                        data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+                    },
+                    yAxis: {
+                        type: 'value',
+                        name: 'Value'
+                    },
+                    series: seriesData
+                };
+
+                // Update the line chart with new data and option
+                lineChart.setOption(lineChartOption);
+            };
+
+            // Initialize the treemap with the first year
+            const initialYear = yearSelect.property('value');
+            updateTreemap(initialYear);
+
+            // Add event listener for treemap click to update the line chart
+            treemapChart.on('click', function(event) {
+                const clickedStateName = event.name;
+                if (clickedStateName && uniqueStates_treeMap.includes(clickedStateName)) {
+                    updateLineChart_State(clickedStateName);
+                }
+                if (clickedStateName && uniquePortName.includes(clickedStateName)) {
+                    updateLineChart_PortName(clickedStateName);
+                }
+            });
+
+            // Add event listener for dropdown to update the treemap based on the selected year
+            yearSelect.on('change', function() {
+                const selectedYear = this.value;
+                updateTreemap(selectedYear);
+            });
+
+        }).catch(error => {
+            //console.error("Error loading CSV file:", error);
+        });
+// chart 3 end
+
+// chart 4 bar chart start
+
+// Bar chart settings
+const barMargin = { top: 20, right: 30, bottom: 40, left: 60 };
+        const barChartWidth = 1300 - barMargin.left - barMargin.right; // 75% of the parent container width
+        const barChartHeight = 400 - barMargin.top - barMargin.bottom;
+
+// Create or update the bar chart title based on the selected state
+        const barTitleSvg = d3.select('#bar-chart-title')
+			.append('svg')
+			.attr('width', 1300 - barMargin.left - barMargin.right)
+			.attr('height', 100 - barMargin.top - barMargin.bottom)
+			.append('g')
+			.attr('transform', `translate(${barMargin.left},${barMargin.top})`)
+
+// Create or update the bar chart title based on the selected measure
+const barTitleSvg_02 = d3.select('#bar-chart-title-02')
+			.append('svg')
+			.attr('width', 1300 - barMargin.left - barMargin.right)
+			.attr('height', 100 - barMargin.top - barMargin.bottom)
+			.append('g')
+			.attr('transform', `translate(${barMargin.left},${barMargin.top})`)
+
+// Create the SVG for the bar chart
+        const barSvg = d3.select('#bar-chart')
+            .append('svg')
+            .attr('width', barChartWidth + barMargin.left + barMargin.right)
+            .attr('height', barChartHeight + barMargin.top + barMargin.bottom)
+            .append('g')
+            .attr('transform', `translate(${barMargin.left},${barMargin.top})`);      
+
+// Create the SVG for the bar chart 02
+const barSvg_02 = d3.select('#bar-chart-02')
+            .append('svg')
+            .attr('width', barChartWidth + barMargin.left + barMargin.right)
+            .attr('height', barChartHeight + barMargin.top + barMargin.bottom)
+            .append('g')
+            .attr('transform', `translate(${barMargin.left},${barMargin.top})`);
+
+// Create the tooltip
+        const tooltip = d3.select('body').append('div')
+            .attr('class', 'tooltip');
+
+// Load the CSV file
+        d3.csv(csvFileName).then(data => {
+
+// Extract unique years and states
+            const uniqueYears = [...new Set(data.map(d => d.Year))].sort();
+            const yearSelect = d3.select('#year-filter');
+
+// Identify maximum year and set as default
+            const maxYear = Math.max(...uniqueYears);
+            uniqueYears.forEach(year => {
+                yearSelect.append('option')
+                    .text(year)
+                    .attr('value', year)
+                    .property('selected', year == maxYear); // Default to max year
+            });
+
+            const stateSelect = d3.select('#state-filter');
+            const measureSelect = d3.select('#measure-filter');
+
+// Function to update states based on selected year
+            function updateStateFilter(selectedYear) {
+                const filteredStates = [...new Set(data.filter(d => d.Year == selectedYear).map(d => d.State))];
+                stateSelect.selectAll('option:not([value="all"])').remove(); // Clear previous state options
+
+                filteredStates.forEach(state => {
+                    stateSelect.append('option')
+                        .text(state)
+                        .attr('value', state)
+                        //.property('selected', state === 'Vermont');
+                });
+            }
+
+// Function to update measures based on selected year
+function updateMeasureFilter(selectedYear) {
+                const filteredMeasure = [...new Set(data.filter(d => d.Year == selectedYear).map(d => d.Measure))];
+                measureSelect.selectAll('option:not([value="all"])').remove(); // Clear previous measure options
+
+                filteredMeasure.forEach(measure => {
+                    measureSelect.append('option')
+                        .text(measure)
+                        .attr('value', measure)
+                        // .property('selected', measure === 'Buses');
+                });
+            }            
+
+// Group the data by 'PortName' and calculate the total 'Value'
+            function getGroupedData(data) {
+                const groupedData = d3.group(data, d => d.PortName);
+                const result = [];
+
+                groupedData.forEach((items, portName) => {
+                    const totalValue = items.reduce((sum, item) => sum + parseFloat(item.Value), 0);
+                    result.push({ PortName: portName, TotalValue: totalValue });
+                });
+
+                return result;
+            }
+
+// Group the data by 'StateName' and calculate the total 'Value'
+            function getGroupedData_02(data) {
+                const groupedData = d3.group(data, d => d.State);
+                const result = [];
+
+                groupedData.forEach((items, state) => {
+                    const totalValue = items.reduce((sum, item) => sum + parseFloat(item.Value), 0);
+                    result.push({ State: state, TotalValue: totalValue });
+                });
+
+                return result;
+            }
+
+// Function to update the bar chart based on filtered data
+            function updateBarChart(filteredData) {
+			
+// Group data by 'PortName' and sum 'Value'
+                const groupedData = getGroupedData(filteredData);
+
+// Set the scales
+                const x = d3.scaleBand()
+                    .domain(groupedData.map(d => d.PortName))
+                    .range([0, barChartWidth])
+                    .padding(0.1);
+
+                const y = d3.scaleLinear()
+                    .domain([0, d3.max(groupedData, d => d.TotalValue)]) // Convert to numeric
+                    .range([barChartHeight, 0]);
+
+                const formatWithCommas = d3.format(",");
+				
+// Calculate the total sum of 'Value'
+				const totalSum = groupedData.reduce((sum, d) => sum + d.TotalValue, 0);
+
+                let capitalizedStateName = stateSelect.property('value').toUpperCase();
+
+				barTitleSvg.append('text') // Add the interactive title
+                    .attr('class', 'bar-chart-title')
+                    .attr('text-anchor', 'middle')
+                    .attr('x', (1300 - barMargin.left - barMargin.right)/2 - 60)
+                    .attr('y', 8) // Positioned above the bars
+                    .text(`BAR CHART IS SHOWING DATA FOR ${capitalizedStateName} STATE`);
+
+// Create the axes
+                barSvg.append('g')
+                    .attr('transform', `translate(0,${barChartHeight})`)
+                    .call(d3.axisBottom(x))
+                    .selectAll('text')
+                    .attr('transform', 'rotate(-10)')
+                    .attr('text-anchor', 'end')
+                    .attr('dy', '0.5em'); // Adjust y-offset to improve readability
+
+                barSvg.append('g')
+					.call(d3.axisLeft(y).tickFormat(d => (d / 1_000_000).toFixed(1))) // Use formatter
+					.selectAll('text')
+					.attr('text-anchor', 'middle') // Adjust label alignment
+					.attr('dx', '-0.5em'); // Adjust x-offset
+
+// Create axis labels
+                barSvg.append('text') // x-axis label
+					.attr('text-anchor', 'middle')
+					.attr('x', barChartWidth / 2)
+					.attr('y', barChartHeight + barMargin.bottom) // Just above the bottom margin
+					.text('Port Names'); // Custom x-axis label
+
+                barSvg.append('text') // y-axis label
+					.attr('text-anchor', 'middle')
+					.attr('transform', 'rotate(-90)') // Rotate the text for vertical alignment
+					.attr('x', -barChartHeight / 2) // Position in the middle of the y-axis
+					.attr('y', -barMargin.left + 20) // Adjusted to account for the left margin
+					.text('Total Value (in Millions)'); // Custom y-axis label
+
+// Create the bars
+                const bars = barSvg.selectAll('.bar')
+                    .data(groupedData);
+
+// Add percentage text above each bar
+                bars.enter().append('text')        
+					.attr('x', d => x(d.PortName) + x.bandwidth() / 2) // Centered on the bar
+					.attr('y', d => y(d.TotalValue) - 5) // Just above the bar
+					.transition()
+                    .delay(600)
+                    .duration(1000)
+					.attr('text-anchor', 'middle') // Centered text
+					.text(d => `${((d.TotalValue / totalSum) * 100).toFixed(1)}%`);                    
+
+// Enter new bars
+                bars.enter().append('rect')
+                    .style('fill', (d, i) => d3.schemePaired[i % 10])
+                    .attr('stroke','black')
+                    .attr('class', 'bar')
+                    .on('mouseover', function(event, d) {
+                        tooltip.style('opacity', 1);
+                        tooltip.html(`PortName: ${d.PortName}<br>Total Value: ${formatWithCommas(d.TotalValue)}`)
+                        .style('left', (event.pageX + 10) + 'px')
+                        .style('top', (event.pageY - 20) + 'px');
+                    })
+                    .on('mouseout', function(event, d) {
+                        tooltip.style('opacity', 0);
+                    })
+                    .attr('x', d => x(d.PortName))
+                    .attr('width', x.bandwidth())
+                    .transition()
+                    .duration(1000)
+                    .attr('height', d => barChartHeight - y(d.TotalValue))
+                    .attr('y', d => y(d.TotalValue));
+
+// Update existing bars
+                bars.attr('x', d => x(d.PortName))
+                    .attr('y', d => y(d.TotalValue))
+                    .attr('width', x.bandwidth())
+                    .attr('height', d => barChartHeight - y(d.TotalValue));
+
+// Remove old bars
+                bars.exit().transition().duration(750).remove();
+            }
+
+// Function to update the bar chart 02 based on filtered data
+            function updateBarChart_02(filteredData_02) {
+			
+// Group data by 'State' and sum 'Value'
+                const groupedData = getGroupedData_02(filteredData_02);
+
+// Set the scales
+                const x = d3.scaleBand()
+                    .domain(groupedData.map(d => d.State))
+                    .range([0, barChartWidth])
+                    .padding(0.1);
+
+                const y = d3.scaleLinear()
+                    .domain([0, d3.max(groupedData, d => d.TotalValue)]) // Convert to numeric
+                    .range([barChartHeight, 0]);
+
+                const formatWithCommas = d3.format(",");
+				
+// Calculate the total sum of 'Value'
+                const totalSum = groupedData.reduce((sum, d) => sum + d.TotalValue, 0);
+
+                let capitalizedMeasureName = measureSelect.property('value').toUpperCase();
+				
+				barTitleSvg_02.append('text') // Add the interactive title
+                    .attr('class', 'bar-chart-title-02')
+                    .attr('text-anchor', 'middle')
+                    .attr('x', (1300 - barMargin.left - barMargin.right)/2 - 60)
+                    .attr('y', 8) // Positioned above the bars
+                    .text(`BAR CHART IS SHOWING DATA FOR MEASURE ${capitalizedMeasureName}`);
+
+// Create the axes
+                barSvg_02.append('g')
+                    .attr('transform', `translate(0,${barChartHeight})`)
+                    .call(d3.axisBottom(x))
+                    .selectAll('text')
+                    .attr('transform', 'rotate(-10)')
+                    .attr('text-anchor', 'end')
+                    .attr('dy', '0.5em'); // Adjust y-offset to improve readability
+
+                barSvg_02.append('g')
+					.call(d3.axisLeft(y).tickFormat(d => (d / 100_000).toFixed(1))) // Use formatter
+					.selectAll('text')
+					.attr('text-anchor', 'middle') // Adjust label alignment
+					.attr('dx', '-0.5em'); // Adjust x-offset
+
+// Create axis labels
+				barSvg_02.append('text') // x-axis label
+					.attr('text-anchor', 'middle')
+					.attr('x', barChartWidth / 2)
+					.attr('y', barChartHeight + barMargin.bottom) // Just above the bottom margin
+					.text('State Names'); // Custom x-axis label
+
+				barSvg_02.append('text') // y-axis label
+					.attr('text-anchor', 'middle')
+					.attr('transform', 'rotate(-90)') // Rotate the text for vertical alignment
+					.attr('x', -barChartHeight / 2) // Position in the middle of the y-axis
+					.attr('y', -barMargin.left + 20) // Adjusted to account for the left margin
+					.text('Total Value (in Thousand)'); // Custom y-axis label
+
+// Create the bars
+                const bars = barSvg_02.selectAll('.bar')
+                    .data(groupedData);
+                
+// Add percentage text above each bar
+				bars.enter().append('text')        
+					.attr('x', d => x(d.State) + x.bandwidth() / 2) // Centered on the bar
+					.attr('y', d => y(d.TotalValue) - 5) // Just above the bar
+					.transition()
+                    .delay(600)
+                    .duration(1000)
+					.attr('text-anchor', 'middle') // Centered text
+					.text(d => `${((d.TotalValue / totalSum) * 100).toFixed(1)}%`);
+                  
+// Enter new bars
+                bars.enter().append('rect')
+                    .style('fill', (d, i) => d3.schemeTableau10[i % 10])
+                    .attr('stroke','black')
+                    .attr('class', 'bar')
+                    .on('mouseover', function(event, d) {
+                        tooltip.style('opacity', 1);
+                        tooltip.html(`State: ${d.State}<br>Total Value: ${formatWithCommas(d.TotalValue)}`)
+                            .style('left', (event.pageX + 10) + 'px')
+                            .style('top', (event.pageY - 20) + 'px');
+                            })
+                    .on('mouseout', function(event, d) {
+                        tooltip.style('opacity', 0);
+							})
+                    .attr('x', d => x(d.State))                    
+                    .attr('width', x.bandwidth())
+                    .transition()
+                    .duration(1000)
+                    .attr('height', d => barChartHeight - y(d.TotalValue))
+                    .attr('y', d => y(d.TotalValue));
+                
+// Update existing bars
+                bars.attr('x', d => x(d.State))
+                    .attr('y', d => y(d.TotalValue))
+                    .attr('width', x.bandwidth())
+                    .attr('height', d => barChartHeight - y(d.TotalValue));
+
+// Remove old bars
+                bars.exit().transition().duration(750).remove();
+            }            
+            
+// Function to update the console, bar chart based on selected year and state
+            function updateConsole() {
+                const selectedYear = yearSelect.property('value');
+                const selectedState = stateSelect.property('value');
+
+                let filteredData = data.filter(d => d.Year == selectedYear);
+
+                if (selectedState !== 'all') {
+                    filteredData = filteredData.filter(d => d.State === selectedState);
+                }
+
+                //console.log(`Data for Year ${selectedYear}, State: ${selectedState !== 'all' ? selectedState : 'All'}:`, filteredData);
+
+// Update the bar chart and pie chart
+                barSvg.selectAll('*').remove(); // Clear existing bar chart elements
+                barTitleSvg.selectAll('.bar-chart-title').remove();
+                updateBarChart(filteredData);
+            }
+
+// Function to update the console, bar chart, and pie chart based on selected year and measure
+function updateConsole_02() {
+                const selectedYear = yearSelect.property('value');
+                const selectedMeasure = measureSelect.property('value');
+
+                let filteredData_02 = data.filter(d => d.Year == selectedYear);
+
+                if (selectedMeasure !== 'all') {
+                    filteredData_02 = filteredData_02.filter(d => d.Measure === selectedMeasure);
+					}
+
+                //console.log(`02 Data for Year ${selectedYear}, Measure: ${selectedMeasure !== 'all' ? selectedMeasure : 'All'}:`, filteredData_02);
+
+// Update the bar chart
+                barSvg_02.selectAll('*').remove(); // Clear existing bar chart elements
+                barTitleSvg_02.selectAll('.bar-chart-title-02').remove();
+                updateBarChart_02(filteredData_02);
+            }            
+
+            // Set event listeners for the dropdowns
+            yearSelect.on('change', () => {
+                const selectedYear = yearSelect.property('value');
+                updateStateFilter(selectedYear); // Update state filter
+                updateConsole(); // Update console and update chart
+                updateMeasureFilter(selectedYear); // Update measure filter
+                updateConsole_02(); // Update console and update chart
+            });
+
+            stateSelect.on('change', updateConsole); // Update console and update chart
+            measureSelect.on('change', updateConsole_02); // Update console and update chart 02
+
+            // Initialize with data for the maximum year and all states
+            updateStateFilter(maxYear);
+            updateConsole();
+            updateMeasureFilter(maxYear);
+            updateConsole_02();            
+        }).catch(error => {
+            console.error('Error loading CSV file:', error);
+        });
+
+// chart 4 bar chart start
+
+// chart 2 start
+
+        // Load US states GeoJSON
+        const usGeoJSON = 'https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json';
+
+        // Create the map SVG and define a projection and path_chart2
+        const svg_chart2 = d3.select("#map");
+        const projection = d3.geoAlbersUsa().scale(1000).translate([480, 300]);
+        const path_chart2 = d3.geoPath().projection(projection);
+
+        // Tooltip_chart2 element
+        const tooltip_chart2 = d3.select("#tooltip_chart2");
+
+        // Function to create the legend within the SVG
+        function createLegend(colorScale_chart2) {
+            // Clear existing legend
+            svg_chart2.selectAll(".legend").remove();
+
+            // Legend dimensions and position (top right corner)
+            const legendWidth_chart2 = 150;
+            const legendHeight_chart2 = 20;
+            const legendPadding_chart2 = 10;
+            const legendX_chart2 = 850 - legendWidth_chart2 - legendPadding_chart2; // Positioning from the right edge
+            const legendY_chart2 = legendPadding_chart2 + 30; // Positioning from the top
+
+            // Create a linear gradient for the legend
+            const gradient_chart2 = svg_chart2.append("defs").append("linearGradient")
+                .attr("id", "legend-gradient")
+                .attr("x1", "0%")
+                .attr("x2", "100%")
+                .attr("y1", "0%")
+                .attr("y2", "0%");
+
+            // Define gradient stops based on the color scale
+            colorScale_chart2.range().forEach((color, i, array) => {
+                gradient_chart2.append("stop")
+                    .attr("offset", `${(i / (array.length - 1)) * 100}%`)
+                    .attr("stop-color", color);
+            });
+
+            // Create the legend rectangle filled with the gradient
+            svg_chart2.append("rect")
+                .attr("x", legendX_chart2)
+                .attr("y", legendY_chart2)
+                .attr("width", legendWidth_chart2)
+                .attr("height", legendHeight_chart2)
+                .style("fill", "url(#legend-gradient)")
+                .attr("class", "legend"); // Add class to the legend rectangle
+
+            // Add labels for min and max values
+            svg_chart2.append("text")
+                .attr("x", legendX_chart2)
+                .attr("y", legendY_chart2 + legendHeight_chart2 + 10) // Below the rectangle
+                .text(`0`)
+                .attr("class", "legend"); // Add class for removal later
+
+            svg_chart2.append("text")
+                .attr("x", legendX_chart2 + legendWidth_chart2)
+                .attr("y", legendY_chart2 + legendHeight_chart2 + 10)
+                .attr("text-anchor", "end")
+                .text(d3.max(colorScale_chart2.domain()).toLocaleString())
+                .attr("class", "legend"); // Add class for removal later
+        }
+
+        // Read the CSV file
+        d3.csv(csvFileName).then(data => {
+            // Extract unique years for the dropdown
+            const uniqueYears_chart2 = Array.from(new Set(data.map(d => d.Year))).sort();
+
+            // Get the dropdown element
+            const yearSelect = d3.select("#year-select");
+
+            // Populate the dropdown with unique years
+            yearSelect
+                .selectAll("option")
+                .data(uniqueYears_chart2)
+                .enter()
+                .append("option")
+                .attr("value", d => d)
+                .text(d => d);
+
+            // Function to draw the map with data filtered by the selected year
+            function drawMap_chart2(selectedYear) {
+			
+				svg_chart2.selectAll(".svg-title").remove(); // Remove existing title
+
+                // Add a new title for the choropleth map with the year
+                svg_chart2.append("text")
+                    .attr("x", 480) // Center horizontally
+                    .attr("y", 18) // A bit down from the top
+                    .attr("text-anchor", "middle")
+                    .attr("class", "svg-title")
+                    .attr("font-size",10.5)
+                    .attr("font-weight","bold")
+                    .text(`CHOROPLETH MAP SHOWING THE INTENSIY OF BORDER CROSSING FOR THE YEAR ${selectedYear}. BLUE CIRCLE SHOWS THE VALUE OF CROSSING FOR THE PORT`); // Title with year
+					
+				// Filter data for the selected year
+				const filteredData_chart2 = data.filter(d => d.Year === selectedYear);
+				//console.log('Maximum Value:', filteredData_chart2);
+		
+			//--	------------------------------------------------------------------------------------------
+				const groupedData = d3.group(filteredData_chart2, d => d.Year, 
+																d => d.Latitude, 
+																d => d.Longitude, 
+																d =>d.State,
+																d => d.PortName, 
+																d => d.PortCode,
+                                                                d => d.Border);
+		
+				// Flatten the grouped data into an array
+				const resultArray = [];
+		
+				groupedData.forEach((yearGroup, year) => {
+					yearGroup.forEach((latGroup, latitude) => {
+						latGroup.forEach((longGroup, longitude) => {
+							longGroup.forEach((stateGroup, state) => {
+								stateGroup.forEach((portNameGroup, portname) => {
+									portNameGroup.forEach((portCodeGroup, portcode) => {
+                                        portCodeGroup.forEach((borderGroup, border) => {
+										        // Calculate the aggregated value (e.g., sum of all values)
+										        const aggregatedValue = d3.sum(borderGroup, d => parseFloat(d.Value));
+		
+        										// Add a new row to the result array
+		        								resultArray.push({
+				        							Year: year,
+						        					Latitude: latitude,
+								        			Longitude: longitude,
+										        	State: state,
+										        	PortName: portname,
+											        PortCode: portcode,
+                                                    Border: border,
+											        Value: aggregatedValue
+                                                });
+										});
+									});
+								});
+							});
+						});
+					});
+				});
+		
+			//Check the output
+			//console.log(resultArray);
+		
+		
+				//--	-------------------------------------------------------------------------------------------
+		
+				// Check for numeric values in the 'Value' field
+				const parsedData = filteredData_chart2.map(d => ({
+				...d,
+					Value: parseFloat(d.Value) // Parse 'Value' as a float
+					}));
+				const maxValue = Math.max(...parsedData.map(d => d.Value));
+				//console.log("Max Value:", maxValue);
+		
+				// Create a dictionary of values by state
+				const stateValueDict_chart2 = {};
+				filteredData_chart2.forEach(d => {
+					const state = d.State;
+					const value = parseFloat(d.Value);
+					if (state in stateValueDict_chart2) {
+						stateValueDict_chart2[state] += value; // Aggregate values for the same state
+					} else {
+						stateValueDict_chart2[state] = value;
+					}});
+		
+				// Define a color scale for the choropleth using Yellow, Orange, and Dark Red
+				const colorScale_chart2 = d3.scaleQuantize()
+				.domain([0, d3.max(Object.values(stateValueDict_chart2))])
+				.range(d3.schemeYlOrRd[9]);
+		
+				// Add the legend within the map
+				createLegend(colorScale_chart2); // Create the legend in the SVG
+		
+				// Load and draw the US states GeoJSON
+				d3.json(usGeoJSON).then(geojson => {
+					// Bind the GeoJSON to the SVG and color states based on the filtered data
+					svg_chart2.selectAll("path")
+						.data(geojson.features)
+						.join(
+							enter => enter.append("path").attr("d", path_chart2),
+							update => update,
+							exit => exit.remove()
+						)
+						.attr("fill", d => {
+							const state = d.properties.name;
+							return state in stateValueDict_chart2 ? colorScale_chart2(stateValueDict_chart2[state]) : "#ccc";
+						})
+						.attr("stroke", "#333")
+						.attr("stroke-width", 0.5)
+						.on("mouseover", function(event, d) {
+							// Display tooltip_chart2 and state hover effect
+							const state = d.properties.name;
+							const formatWithCommas = d3.format(",");
+							const value = stateValueDict_chart2[state] || 0;
+							tooltip_chart2
+								.style("opacity", 1)
+								.html(`${state}: <b>${formatWithCommas(value).toLocaleString()}</b>`)
+								.style("left", (event.pageX + 10) + "px")
+								.style("top", (event.pageY - 10) + "px");
+								
+							// Change the state color to dark green and text to bold white
+							d3.select(this).attr("fill", "darkgreen");
+							svg_chart2.append("text")
+								.attr("x", d3.geoPath().centroid(d)[0])
+								.attr("y", d3.geoPath().centroid(d)[1])
+								.attr("text-anchor", "middle")
+								.attr("fill", "white")
+								.attr("font-weight", "bold")
+								.text(d.properties.name)
+								.attr("id", `hover-text-${d.properties.name}`); // ID for removal on mouseout
+						})
+						.on("mouseout", function() {
+							tooltip_chart2.style("opacity", 0); // Hide tooltip_chart2 when mouse leaves
+							d3.select(this)
+							.attr("fill", d => {
+								const state = d.properties.name;
+								return state in stateValueDict_chart2 ? colorScale_chart2(stateValueDict_chart2[state]) : "#ccc";
+							});
+		
+							// Remove the displayed state name text when mouse moves out
+							// svg_chart2.select(`#hover-text-${d.properties.name}`). remove();
+						});                       
+		
+					// Plot the locations using Latitude and Longitude
+					svg_chart2.selectAll("circle")
+						.data(resultArray)
+						.join("circle")
+						.attr("cx", d => projection([+d.Longitude, +d.Latitude])[0])
+						.attr("cy", d => projection([+d.Longitude, +d.Latitude])[1])
+						.attr("r", d => d.Value)
+						.attr("r", function(d){  return ((d.Value / 1000000)+5)
+							//    console.log("value",d.Value, "year",d.Year ); 
+						})
+						.attr("opacity", 0.3)
+						.attr("fill", "blue")
+						.attr("stroke", "darkblue")
+						.attr("stroke-width", 1.5)
+						.on("mouseover", function(event, d) {
+							// On hover, increase radius and change color
+							d3.select(this)
+							.attr("r", function(d){  return (d.Value / 1000000) +5}) // Increase by 50%
+							.style("opacity",1)
+							.attr("fill", "black")
+							.attr("stroke", "darkgreen");                      
+							// Show tooltip_chart2 with Port Name, Port Code, and Value
+							//const portName = d.PortName;
+							//const portCode = d.PortCode;
+							const formatWithCommas = d3.format(",");
+							const value = d.Value.toLocaleString(); // Format with commas
+							tooltip_chart2
+							.style("opacity", 1)
+							.html(`Border: <b>${d.Border}</b> <br> State: <b>${d.StateName}</b> <br> Port: <b>${d.PortName}</b> <br> Port Code: <b>${d.PortCode}</b><br> Crossing Amount: <b>${formatWithCommas(d.Value)}</b>`)
+							.style("left", (event.pageX + 10) + "px")
+							.style("top", (event.pageY - 10) + "px");
+						})
+						.on("mouseout", function() {
+							tooltip_chart2.style("opacity", 0.3); // Hide tooltip_chart2 when mouse leaves
+							d3.select(this)
+							.style("opacity", 0.3)
+							.attr("r", function(d){  return ((d.Value / 1000000)+5)}) // Reset radius
+							.attr("fill", "blue")
+							.attr("stroke", "darkblue");
+						})
+					});
+            }
+
+            // Event listener for the dropdown to redraw the map based on the selected year
+            yearSelect.on("change", function() {
+                const selectedYear = this.value;
+                drawMap_chart2(selectedYear); // Draw the map with filtered data
+            });
+
+            // Initialize with the first year selected and draw the initial map
+            if (uniqueYears_chart2.length > 0) {
+                const firstYear = uniqueYears_chart2[0];
+                yearSelect.property("value", firstYear); // Set the initial selection
+                drawMap_chart2(firstYear); // Draw the initial map
+            }
+        })
+        .catch(error => {
+            // Handle error when reading the CSV or GeoJSON files
+           // console.error("Error:", error);
+        });
+
+
+// chart 02 end
+
+
+// chart 01 start
+d3.csv(csvFileName).then(data => {
+        data.forEach(d => {
+            d.Year = +d.Year;
+            d.Value = +d.Value;
+        });
+
+        const chartData = [];
+        const groupedByYear = d3.group(data, d => d.Year);
+
+        groupedByYear.forEach((yearGroup, year) => {
+            const groupedByBorder = d3.group(yearGroup, d => d.Border);
+
+            groupedByBorder.forEach((borderGroup, border) => {
+                const totalValue = d3.sum(borderGroup, d => d.Value);
+                chartData.push({ Year: year, Border: border, TotalValue: totalValue });
+            });
+        });
+
+        // Scale 'TotalValue' to millions
+        chartData.forEach(d => {
+            d.TotalValueInMillions = d.TotalValue / 1_000_000; // Convert to millions
+        });
+
+        const uniqueYears = Array.from(new Set(chartData.map(d => d.Year))).sort((a, b) => a - b);
+
+        const svg_chart1 = d3.select('#line-chart');
+        const margin_chart1 = { top: 40, right: 100, bottom: 60, left: 70 }; // Adjust margins_chart1 for legend
+        const width_chart1 = 1000 - margin_chart1.left - margin_chart1.right;
+        const height_chart1 = 300 - margin_chart1.top - margin_chart1.bottom;
+
+        const g_chart1 = svg_chart1.append('g').attr('transform', `translate(${margin_chart1.left}, ${margin_chart1.top})`);
+
+        // Define a color scale for the borders
+        const colorScale_chart1 = d3.scaleOrdinal(d3.schemeCategory10);
+
+        // Create scales for the x and y axes
+        const xScale_chart1 = d3.scaleLinear().domain([uniqueYears[0], uniqueYears[uniqueYears.length - 1]]).range([0, width_chart1]);
+        const yScale_chart1 = d3.scaleLinear().domain([0, d3.max(chartData, d => d.TotalValueInMillions)]).range([height_chart1, 0]);
+
+        const xAxis_chart1 = d3.axisBottom(xScale_chart1).tickValues(uniqueYears).tickFormat(d3.format('d'));
+        const yAxis_chart1 = d3.axisLeft(yScale_chart1).tickFormat(d3.format('.1f'));
+
+        // Add grid lines
+        function makeXAxisGrid() {
+            return d3.axisBottom(xScale_chart1).tickValues(uniqueYears); // Reuse x-axis ticks
+        }
+
+        function makeYAxisGrid() {
+            return d3.axisLeft(yScale_chart1).ticks(10); // Adjust the number of ticks as needed
+        }
+
+        // Draw the grid lines before other elements
+        g_chart1.append('g')
+            .attr('class', 'grid')
+            .attr('transform', `translate(0, ${height_chart1})`)
+            .call(makeXAxisGrid().tickSize(-height_chart1).tickFormat("")); // Horizontal grid lines
+
+        g_chart1.append('g')
+            .attr('class', 'grid')
+            .call(makeYAxisGrid().tickSize(-width_chart1).tickFormat("")); // Vertical grid lines
+
+        // Draw the axes after the grid lines to ensure visibility
+        g_chart1.append('g').attr('class', 'axis x-axis').attr('transform', `translate(0, ${height_chart1})`).call(xAxis_chart1);
+
+        // Add x-axis label
+        g_chart1.append('text')
+            .attr('x', width_chart1 / 2)
+            .attr('y', height_chart1 + 40)
+            .attr('text-anchor', 'middle')
+            .attr('font-size',13)
+            .text('Number of Years');
+
+        g_chart1.append('g').attr('class', 'axis y-axis').call(yAxis_chart1);
+
+        // Add y-axis label to indicate values are in millions
+        g_chart1.append('text')
+            .attr('transform', 'rotate(-90)')
+            .attr('y', -50) 
+            .attr('x', -height_chart1 / 2) 
+            .attr('text-anchor', 'middle') 
+            .attr('font-size',13)
+            .text('Number of border-crosses (millions)');
+
+        const line_chart1 = d3.line()
+            .x(d => xScale_chart1(d.Year))
+            .y(d => yScale_chart1(d.TotalValueInMillions));
+
+        const groupedByBorder = d3.group(chartData, d => d.Border);
+
+        groupedByBorder.forEach((borderGroup, border) => {
+            const color = colorScale_chart1(border); // Get color for each border
+
+            g_chart1.append('path')
+                .datum(borderGroup)
+                .attr('class', 'line')
+                .attr('d', line_chart1)
+                .attr('stroke', color);
+
+            g_chart1.selectAll(`circle.${border.replace(/\s/g, '')}`)
+                .data(borderGroup)
+                .enter().append('circle')
+                .attr('r', 4)
+                .attr('cx', d => xScale_chart1(d.Year))
+                .attr('cy', d => yScale_chart1(d.TotalValueInMillions))
+                .attr('fill', color)
+                .on('mouseover', function(event, d) {
+                    const tooltip_chart1 = d3.select('#tooltip_chart1');
+                    tooltip_chart1.style('opacity', 1)
+                           .style('left', `${event.pageX + 10}px`)
+                           .style('top', `${event.pageY - 10}px`)
+                           .html(`Year: ${d.Year} <br> Border: ${d.Border} <br> Total Value: ${(d.TotalValueInMillions).toFixed(2)} million`);
+                })
+                .on('mouseout', () => {
+                    d3.select('#tooltip_chart1').style('opacity', 0);
+                });
+        });
+
+        // Draw the legend in the top right corner with background color
+        const legend_chart1 = g_chart1.append('g')
+            .attr('transform', `translate(${width_chart1 - 90}, 50)`); // Adjust position of the legend
+
+        const legendData_chart1 = Array.from(groupedByBorder.keys());
+
+        // Add background rectangle for the legend
+        const legendRectHeight_chart1 = legendData_chart1.length * 20 + 12; // 10 for padding
+        legend_chart1.append('rect')
+            .attr('width', 180) // Legend rectangle width
+            .attr('height', legendRectHeight_chart1) // Height based on the number of legend items
+            .attr('fill', 'lightgray') // Background color
+            .attr('stroke','black')
+            .attr('rx', 5) // Rounded corners
+            .attr('ry', 5); // Rounded corners
+
+        // Add the legend items
+        legend_chart1.selectAll('g_chart1')
+            .data(legendData_chart1)
+            .enter().append('g')
+            .attr('class', 'legend-item')
+            .attr('transform', (d, i) => `translate(10, ${i * 20 + 10})`) // Offset for padding
+            .each(function(d) {
+                const item = d3.select(this);
+                item.append('rect')
+                    .attr('width', 15)
+                    .attr('height', 15)
+                    .attr('fill', colorScale_chart1(d)); // Assign color to the legend item
+
+                item.append('text')
+                    .attr('x', 20) // Position text to the right of the box
+                    .attr('y', 9) // Vertical alignment with the box
+                    .attr('alignment-baseline', 'middle') // Center text
+                    .text(d); // Add the border name
+            });
+
+    }).catch(error => {
+        console.error('Error reading CSV file:', error);
+    });
+    // <!-- Chart 1 -->
+    // chart 01 end
+</script>
+
+</body>
+</html>
